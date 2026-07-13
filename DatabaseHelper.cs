@@ -76,5 +76,25 @@ namespace DocVaultLocal
                 }
             }
         }
+
+        public void UpdateDocument(int id, string title, string tags)
+        {
+            string query = @"UPDATE Documents 
+                            SET Title = @Title, Tags = @Tags, LastModified = @LastModified 
+                            WHERE Id = @Id;";
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = query;
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@Title", title);
+                    cmd.Parameters.AddWithValue("@Tags", tags);
+                    cmd.Parameters.AddWithValue("@LastModified", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }
