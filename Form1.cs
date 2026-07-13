@@ -19,19 +19,11 @@ namespace DocVaultLocal
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Документы|*.jpg;*.jpeg;*.png;*.pdf";
-            if (ofd.ShowDialog() == DialogResult.OK)
+            using (var addForm = new AddForm())
             {
-                string storagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Storage");
-                System.IO.Directory.CreateDirectory(storagePath);
-                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ofd.FileName);
-                string fullFileName = Path.Combine(storagePath, fileName);
-                File.Copy(ofd.FileName, fullFileName);
-                new DatabaseHelper().AddDocument(txtTitle.Text, txtTags.Text, Path.GetExtension(ofd.FileName), fullFileName);
-                MessageBox.Show("Успешно!");
-                UpdateTable();
+                addForm.ShowDialog();
             }
+            UpdateTable();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -51,6 +43,11 @@ namespace DocVaultLocal
                         }
                         new DatabaseHelper().DeleteDocument(id);
                         UpdateTable();
+                        if (dgvDocuments.RowCount == 0)
+                        {
+                            txtTitle.Text = "";
+                            txtTags.Text = "";
+                        }
                     }
                 }
                 catch
@@ -62,8 +59,8 @@ namespace DocVaultLocal
 
         private void txtFields_TextChanged(object sender, EventArgs e)
         {
-            btnAdd.Enabled = !string.IsNullOrWhiteSpace(txtTitle.Text) &&
-                     !string.IsNullOrWhiteSpace(txtTags.Text);
+            //btnAdd.Enabled = !string.IsNullOrWhiteSpace(txtTitle.Text) &&
+                     //!string.IsNullOrWhiteSpace(txtTags.Text);
         }
 
         private void dgvDocuments_SelectionChanged(object sender, EventArgs e)

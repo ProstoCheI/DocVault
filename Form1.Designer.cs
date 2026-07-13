@@ -181,7 +181,6 @@
             // 
             // btnAdd
             // 
-            btnAdd.Enabled = false;
             btnAdd.Location = new Point(184, 26);
             btnAdd.Name = "btnAdd";
             btnAdd.Size = new Size(140, 23);
