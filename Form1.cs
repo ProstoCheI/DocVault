@@ -30,9 +30,10 @@ namespace DocVaultLocal
         {
             if (dgvDocuments.RowCount != 0)
             {
-                int id = Convert.ToInt32(dgvDocuments.CurrentRow.Cells[0].Value);
-                string filePath = dgvDocuments.CurrentRow.Cells[4].Value.ToString();
-                string fileName = dgvDocuments.CurrentRow.Cells[1].Value.ToString();
+                var selectedDoc = (Models.Document)dgvDocuments.CurrentRow.DataBoundItem;
+                int id = selectedDoc.Id;
+                string filePath = selectedDoc.FilePath;
+                string fileName = selectedDoc.Title;
                 try
                 {
                     if (MessageBox.Show($"Вы уверены что хотите удалить {fileName}", "Удаление!", MessageBoxButtons.YesNo) == DialogResult.Yes)
@@ -61,9 +62,10 @@ namespace DocVaultLocal
         {
             if (dgvDocuments.RowCount != 0)
             {
-                txtTitle.Text = dgvDocuments.CurrentRow.Cells[1].Value?.ToString();
-                txtTags.Text = dgvDocuments.CurrentRow.Cells[2].Value?.ToString();
-                string filePath = dgvDocuments.CurrentRow.Cells[4].Value?.ToString();
+                var selectedDoc = (Models.Document)dgvDocuments.CurrentRow.DataBoundItem;
+                txtTitle.Text = selectedDoc.Title;
+                txtTags.Text = selectedDoc.Tags;
+                string filePath = selectedDoc.FilePath;
 
                 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath) && (filePath.EndsWith(".jpg") || filePath.EndsWith(".png") || filePath.EndsWith(".jpeg")))
                 {
@@ -83,7 +85,8 @@ namespace DocVaultLocal
         {
             if (dgvDocuments.RowCount != 0)
             {
-                string filePath = dgvDocuments.CurrentRow.Cells[4].Value?.ToString();
+                var selectedDoc = (Models.Document)dgvDocuments.CurrentRow.DataBoundItem;
+                string filePath = selectedDoc.FilePath;
                 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
                 {
                     var info = new ProcessStartInfo();
@@ -98,7 +101,8 @@ namespace DocVaultLocal
         {
             if (dgvDocuments.RowCount != 0)
             {
-                int id = Convert.ToInt32(dgvDocuments.CurrentRow.Cells[0].Value);
+                var selectedDoc = (Models.Document)dgvDocuments.CurrentRow.DataBoundItem;
+                int id = selectedDoc.Id;
                 string title = txtTitle.Text;
                 string tags = txtTags.Text;
                 new DatabaseHelper().UpdateDocument(id, title, tags);
