@@ -57,12 +57,6 @@ namespace DocVaultLocal
             }
         }
 
-        private void txtFields_TextChanged(object sender, EventArgs e)
-        {
-            //btnAdd.Enabled = !string.IsNullOrWhiteSpace(txtTitle.Text) &&
-            //!string.IsNullOrWhiteSpace(txtTags.Text);
-        }
-
         private void dgvDocuments_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvDocuments.RowCount != 0)

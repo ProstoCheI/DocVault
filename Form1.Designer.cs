@@ -133,7 +133,6 @@
             txtTags.Name = "txtTags";
             txtTags.Size = new Size(176, 23);
             txtTags.TabIndex = 6;
-            txtTags.TextChanged += txtFields_TextChanged;
             // 
             // lblTags
             // 
@@ -150,7 +149,6 @@
             txtTitle.Name = "txtTitle";
             txtTitle.Size = new Size(176, 23);
             txtTitle.TabIndex = 4;
-            txtTitle.TextChanged += txtFields_TextChanged;
             // 
             // lblTitle
             // 
