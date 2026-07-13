@@ -1,7 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Data.Sqlite;
-using System;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace DocVaultLocal
 {
