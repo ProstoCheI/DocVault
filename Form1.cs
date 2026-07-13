@@ -35,7 +35,7 @@ namespace DocVaultLocal
                 string fileName = selectedDoc.Title;
                 try
                 {
-                    if (MessageBox.Show($"Вы уверены, что хотите удалить {fileName}", "Подтвердите удаление", MessageBoxButtons.YesNo, , MessageBoxIcon.Warning) == DialogResult.Yes)
+                    if (MessageBox.Show($"Вы уверены, что хотите удалить {fileName}", "Подтвердите удаление", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         if (File.Exists(filePath))
                         {
