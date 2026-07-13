@@ -178,6 +178,7 @@
             btnSave.TabIndex = 1;
             btnSave.Text = "Сохранить изменения";
             btnSave.UseVisualStyleBackColor = true;
+            btnSave.Click += btnSave_Click;
             // 
             // btnAdd
             // 

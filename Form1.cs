@@ -60,7 +60,7 @@ namespace DocVaultLocal
         private void txtFields_TextChanged(object sender, EventArgs e)
         {
             //btnAdd.Enabled = !string.IsNullOrWhiteSpace(txtTitle.Text) &&
-                     //!string.IsNullOrWhiteSpace(txtTags.Text);
+            //!string.IsNullOrWhiteSpace(txtTags.Text);
         }
 
         private void dgvDocuments_SelectionChanged(object sender, EventArgs e)
@@ -71,10 +71,8 @@ namespace DocVaultLocal
                 txtTags.Text = dgvDocuments.CurrentRow.Cells[2].Value?.ToString();
                 string filePath = dgvDocuments.CurrentRow.Cells[4].Value?.ToString();
 
-                // Проверяем, существует ли файл и является ли он картинкой (а не PDF, например)
                 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath) && (filePath.EndsWith(".jpg") || filePath.EndsWith(".png") || filePath.EndsWith(".jpeg")))
                 {
-                    // Безопасная загрузка без блокировки файла
                     using (var ms = new MemoryStream(File.ReadAllBytes(filePath)))
                     {
                         pbPreview.Image = Image.FromStream(ms);
@@ -82,7 +80,6 @@ namespace DocVaultLocal
                 }
                 else
                 {
-                    // Если это не картинка или файла нет, очищаем PictureBox
                     pbPreview.Image = null;
                 }
             }
@@ -100,6 +97,18 @@ namespace DocVaultLocal
                     info.UseShellExecute = true;
                     Process.Start(info);
                 }
+            }
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            if (dgvDocuments.RowCount != 0)
+            {
+                int id = Convert.ToInt32(dgvDocuments.CurrentRow.Cells[0].Value);
+                string title = txtTitle.Text;
+                string tags = txtTags.Text;
+                new DatabaseHelper().UpdateDocument(id, title, tags);
+                UpdateTable();
             }
         }
     }
