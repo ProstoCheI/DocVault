@@ -1,6 +1,7 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Dapper;
+using Microsoft.Data.Sqlite;
 using System;
-using Dapper;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace DocVaultLocal
 {
@@ -94,6 +95,20 @@ namespace DocVaultLocal
                     cmd.Parameters.AddWithValue("@LastModified", DateTime.Now);
                     cmd.ExecuteNonQuery();
                 }
+            }
+        }
+
+        public List<Models.Document> SearchDocuments(string keyword)
+        {
+            string query = @"SELECT * FROM Documents 
+                            WHERE Title LIKE @Keyword OR Tags LIKE @Keyword 
+                            ORDER BY DateAdded DESC;";
+            using (var connection = new SqliteConnection(ConnectionString))
+            {
+                connection.Open();
+                var parameters = new { @Keyword = $"%{keyword}%" };
+                var result = connection.Query<Models.Document>(query, parameters).ToList();
+                return result;
             }
         }
     }

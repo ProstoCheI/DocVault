@@ -92,6 +92,7 @@
             txtSearch.PlaceholderText = "Поиск по названию или #тегам";
             txtSearch.Size = new Size(188, 23);
             txtSearch.TabIndex = 1;
+            txtSearch.TextChanged += txtSearch_TextChanged;
             // 
             // dgvDocuments
             // 

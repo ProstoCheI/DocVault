@@ -111,5 +111,17 @@ namespace DocVaultLocal
                 UpdateTable();
             }
         }
+
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+            {
+                dgvDocuments.DataSource = new DatabaseHelper().SearchDocuments(txtSearch.Text);
+            }
+            else
+            {
+                UpdateTable();
+            }
+        }
     }
 }
