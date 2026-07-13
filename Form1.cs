@@ -1,4 +1,3 @@
-using System.IO;
 using System.Diagnostics;
 
 namespace DocVaultLocal
@@ -36,7 +35,7 @@ namespace DocVaultLocal
                 string fileName = selectedDoc.Title;
                 try
                 {
-                    if (MessageBox.Show($"Вы уверены что хотите удалить {fileName}", "Удаление!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if (MessageBox.Show($"Вы уверены, что хотите удалить {fileName}", "Подтвердите удаление", MessageBoxButtons.YesNo, , MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         if (File.Exists(filePath))
                         {
@@ -51,9 +50,19 @@ namespace DocVaultLocal
                         }
                     }
                 }
-                catch
+                catch (IOException ioEx)
                 {
-                    MessageBox.Show("Ошибка удаления!");
+                    MessageBox.Show($"Не удалось удалить файл с диска. Возможно, он открыт в другой программе.\n\nТехнические детали:\n{ioEx.Message}",
+                                    "Ошибка доступа к файлу",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Произошла ошибка при удалении документа:\n\n{ex.Message}",
+                                    "Системная ошибка",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
                 }
             }
         }
