@@ -69,7 +69,14 @@ namespace DocVaultLocal
 
         private void dgvDocuments_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvDocuments.RowCount != 0)
+            bool hasSelected = dgvDocuments.SelectedRows.Count > 0;
+            btnSave.Enabled = hasSelected;
+            btnDelete.Enabled = hasSelected;
+            btnOpenFile.Enabled = hasSelected;
+            txtTitle.Enabled = hasSelected;
+            txtTags.Enabled = hasSelected;
+            pbPreview.Image = !hasSelected ? null : pbPreview.Image;
+            if (hasSelected)
             {
                 var selectedDoc = (Models.Document)dgvDocuments.CurrentRow.DataBoundItem;
                 txtTitle.Text = selectedDoc.Title;

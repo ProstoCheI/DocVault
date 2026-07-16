@@ -108,6 +108,7 @@
             // 
             // btnDelete
             // 
+            btnDelete.Enabled = false;
             btnDelete.Location = new Point(184, 119);
             btnDelete.Name = "btnDelete";
             btnDelete.Size = new Size(140, 23);
@@ -129,6 +130,7 @@
             // 
             // txtTags
             // 
+            txtTags.Enabled = false;
             txtTags.Location = new Point(2, 88);
             txtTags.Name = "txtTags";
             txtTags.Size = new Size(176, 23);
@@ -145,6 +147,7 @@
             // 
             // txtTitle
             // 
+            txtTitle.Enabled = false;
             txtTitle.Location = new Point(2, 27);
             txtTitle.Name = "txtTitle";
             txtTitle.Size = new Size(176, 23);
@@ -161,6 +164,7 @@
             // 
             // btnOpenFile
             // 
+            btnOpenFile.Enabled = false;
             btnOpenFile.Location = new Point(184, 88);
             btnOpenFile.Name = "btnOpenFile";
             btnOpenFile.Size = new Size(140, 23);
@@ -171,6 +175,7 @@
             // 
             // btnSave
             // 
+            btnSave.Enabled = false;
             btnSave.Location = new Point(184, 57);
             btnSave.Name = "btnSave";
             btnSave.Size = new Size(140, 23);
