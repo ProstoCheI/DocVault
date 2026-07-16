@@ -43,11 +43,6 @@ namespace DocVaultLocal
                         }
                         new DatabaseHelper().DeleteDocument(id);
                         UpdateTable();
-                        if (dgvDocuments.RowCount == 0)
-                        {
-                            txtTitle.Text = "";
-                            txtTags.Text = "";
-                        }
                     }
                 }
                 catch (IOException ioEx)
@@ -75,6 +70,8 @@ namespace DocVaultLocal
             btnOpenFile.Enabled = hasSelected;
             txtTitle.Enabled = hasSelected;
             txtTags.Enabled = hasSelected;
+            txtTitle.Text = !hasSelected ? "" : txtTitle.Text;
+            txtTags.Text = !hasSelected ? "" : txtTags.Text;
             pbPreview.Image = !hasSelected ? null : pbPreview.Image;
             if (hasSelected)
             {
