@@ -20,12 +20,7 @@ namespace DocVaultLocal
             using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
-
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
+                connection.Execute(query);
             }
         }
 
@@ -36,17 +31,7 @@ namespace DocVaultLocal
             using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = query;
-                    cmd.Parameters.AddWithValue("@Title", title);
-                    cmd.Parameters.AddWithValue("@Tags", tags);
-                    cmd.Parameters.AddWithValue("@FileType", fileType);
-                    cmd.Parameters.AddWithValue("@FilePath", filePath);
-                    cmd.Parameters.AddWithValue("@DateAdded", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@LastModified", DateTime.Now);
-                    cmd.ExecuteNonQuery();
-                }
+                connection.Execute(query, new { Title = title, Tags = tags, FileType = fileType, FilePath = filePath, DateAdded = DateTime.Now, LastModified = DateTime.Now });
             }
         }
 
@@ -67,12 +52,7 @@ namespace DocVaultLocal
             using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = query;
-                    cmd.Parameters.AddWithValue ("@Id", id);
-                    cmd.ExecuteNonQuery();
-                }
+                connection.Execute(query, new { Id = id});
             }
         }
 
@@ -84,15 +64,7 @@ namespace DocVaultLocal
             using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = query;
-                    cmd.Parameters.AddWithValue("@Id", id);
-                    cmd.Parameters.AddWithValue("@Title", title);
-                    cmd.Parameters.AddWithValue("@Tags", tags);
-                    cmd.Parameters.AddWithValue("@LastModified", DateTime.Now);
-                    cmd.ExecuteNonQuery();
-                }
+                connection.Execute(query, new {Id = id, Title = title, Tags = tags, LastModified = DateTime.Now });
             }
         }
 
@@ -104,8 +76,7 @@ namespace DocVaultLocal
             using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
-                var parameters = new { @Keyword = $"%{keyword}%" };
-                var result = connection.Query<Models.Document>(query, parameters).ToList();
+                var result = connection.Query<Models.Document>(query, new { Keyword = $"%{keyword}%" }).ToList();
                 return result;
             }
         }
