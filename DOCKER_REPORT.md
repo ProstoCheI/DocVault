@@ -1,101 +1,37 @@
-# Отчет по интеграции Docker в проект DocVault
+# Docker в DocVault
 
-## 1. Введение и цель работы
-Цель работы — контейнеризация проекта **DocVault** с использованием технологии **Docker**, обеспечивающей изоляцию окружения, переносимость и воспроизводимость сборки на базе платформы **.NET 9**.
+## Назначение
 
----
+Docker обеспечивает подготовку Windows-приложения в описанной среде сборки. Пользовательское приложение сохраняет прежние формы и операции с документами. Графический интерфейс запускается в Windows вне контейнера.
 
-## 2. Архитектура решения и ветвление в Git
+## Изменения относительно feature/docker-integration
 
-Для изоляции изменений от основной кодовой базы была создана отдельная ветка:
-```bash
-git checkout -b feature/docker-integration
+- Удалён консольный режим с инициализацией базы и бесконечным heartbeat: он не реализовывал работу пользователя с архивом.
+- Восстановлен единый целевой framework `net9.0-windows` и включён `EnableWindowsTargeting`, разрешающий сборку Windows-проекта в Linux SDK.
+- Dockerfile публикует автономный `win-x64` EXE. Этап `export` копирует результат для Compose; этап `artifacts` позволяет выгрузить результат через BuildKit.
+- Compose содержит одноразовую задачу `build-windows`, без серверного процесса и томов данных приложения.
+- Зафиксированы SDK, digest образа и NuGet lock-файл.
+- База SQLite привязана к каталогу EXE, как и папка Storage. Исправление предотвращает выбор другого каталога при смене рабочей папки.
+- `.dockerignore` исключает архивные файлы, базы, результаты сборки и локальные настройки из контекста.
+
+## Исправленная проблема томов
+
+В исходной ветке том `docvault_db` монтировался в `/app/data`, тогда как БД создавалась по пути `/app/docvault.db`. Такая конфигурация не сохраняла БД при пересоздании контейнера. В выбранной архитектуре приложение вообще не хранит рабочие данные в контейнере: они находятся рядом с EXE в Windows. Контейнер отвечает только за сборку.
+
+## Запуск сборки
+
+```powershell
+docker compose run --build --rm build-windows
 ```
 
-### Мультитаргетинг (Cross-Platform .NET 9)
-Исходный проект ориентирован на Windows Forms (`net9.0-windows`). Для поддержки работы в среде Linux-контейнеров без нарушения десктопной версии был настроен мультитаргетинг в файле `DocVaultLocal.csproj`:
-* При компиляции на Windows-хосте собирается `net9.0-windows` (GUI интерфейс).
-* При сборке внутри Linux-контейнера Docker компилируется `net9.0` (фоновая служба DocVault Service, выполняющая инициализацию базы данных SQLite и управление файловым хранилищем).
+Результат — `artifacts/DocVaultLocal.exe`. Перед обычной работой перенесите его в отдельную папку Windows. Сборка и пользовательский архив должны быть разделены.
 
----
+## Проверки
 
-## 3. Конфигурация Dockerfile (Multi-Stage Build)
+Публикация автономного EXE, проверка запуска и инициализации каталога, тесты CRUD и стабильного пути базы, проверка конфигурации Compose выполнены успешно. Linux-сборка в Docker ещё требует проверки на работающем Docker Engine: в использованной среде Docker Desktop не запустился.
 
-Был спроектирован многоэтапный `Dockerfile` для оптимизации размера конечного образа:
+## Источники
 
-```dockerfile
-# Этап 1: Сборка и компиляция приложения в образе SDK
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
-
-# Копирование файла проекта и восстановление зависимостей
-COPY ["DocVaultLocal.csproj", "./"]
-RUN dotnet restore "DocVaultLocal.csproj" /p:TargetFramework=net9.0
-
-# Копирование исходного кода и публикация Release-сборки
-COPY . .
-RUN dotnet publish "DocVaultLocal.csproj" -c Release -f net9.0 -o /app/publish
-
-# Этап 2: Финальный образ для запуска (минимальный runtime)
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
-WORKDIR /app
-
-# Создание директории для хранения документов
-RUN mkdir -p /app/Storage
-
-# Копирование скомпилированных файлов из этапа сборки
-COPY --from=build /app/publish .
-
-ENV DOTNET_ENVIRONMENT=Production
-
-# Точка входа контейнера
-ENTRYPOINT ["dotnet", "DocVaultLocal.dll"]
-```
-
----
-
-## 4. Конфигурация Docker Compose
-
-Файл `docker-compose.yml` описывает сервис и постоянные тома (Volumes) для сохранения данных:
-
-```yaml
-services:
-  docvault-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: docvault-container
-    restart: unless-stopped
-    volumes:
-      - docvault_storage:/app/Storage
-      - docvault_db:/app/data
-
-volumes:
-  docvault_storage:
-  docvault_db:
-```
-
----
-
-## 5. Основные команды для сборки и демонстрации
-
-1. **Сборка Docker-образа:**
-   ```bash
-   docker compose build
-   ```
-2. **Запуск контейнера в фоновом режиме:**
-   ```bash
-   docker compose up -d
-   ```
-3. **Просмотр логов работы контейнера:**
-   ```bash
-   docker logs docvault-container
-   ```
-4. **Проверка статуса активных контейнеров:**
-   ```bash
-   docker ps
-   ```
-5. **Остановка сервиса:**
-   ```bash
-   docker compose down
-   ```
+- Microsoft: EnableWindowsTargeting — https://learn.microsoft.com/en-us/dotnet/core/tools/sdk-errors/netsdk1100
+- Microsoft: ограничения интерактивных приложений в Windows containers — https://learn.microsoft.com/en-us/virtualization/windowscontainers/quick-start/lift-shift-to-containers
+- Docker: local exporter — https://docs.docker.com/build/exporters/local-tar/

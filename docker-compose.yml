@@ -1,14 +1,8 @@
 services:
-  docvault-app:
+  build-windows:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: docvault-container
-    restart: unless-stopped
+      target: export
     volumes:
-      - docvault_storage:/app/Storage
-      - docvault_db:/app/data
-
-volumes:
-  docvault_storage:
-  docvault_db:
+      - ./artifacts:/out

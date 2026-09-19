@@ -1,11 +1,15 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.Sqlite;
 
 namespace DocVaultLocal
 {
     internal class DatabaseHelper
     {
-        private const string ConnectionString = "Data Source=docvault.db";
+        // Keep metadata beside the executable, independently of the shell working directory.
+        private static readonly string ConnectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.Combine(AppContext.BaseDirectory, "docvault.db")
+        }.ToString();
         public void InitializeDatabase()
         {
             string query = @"CREATE TABLE IF NOT EXISTS Documents (

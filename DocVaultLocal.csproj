@@ -1,33 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <OutputType Condition="'$(TargetFramework)' == 'net9.0-windows'">WinExe</OutputType>
-    <OutputType Condition="'$(TargetFramework)' == 'net9.0'">Exe</OutputType>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net9.0-windows;net9.0</TargetFrameworks>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net9.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Cross-compile the unchanged Windows UI inside a Linux SDK container. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Nullable>enable</Nullable>
-    <UseWindowsForms Condition="'$(TargetFramework)' == 'net9.0-windows'">true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <DebugType>embedded</DebugType>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'net9.0-windows'">
-    <Compile Remove="Form1.cs" />
-    <Compile Remove="Form1.Designer.cs" />
-    <Compile Remove="AddForm.cs" />
-    <Compile Remove="AddForm.Designer.cs" />
-    <EmbeddedResource Remove="Form1.resx" />
-    <EmbeddedResource Remove="AddForm.resx" />
-  </ItemGroup>
-
   <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
     <PackageReference Include="Dapper" Version="2.1.79" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Storage\" />
-  </ItemGroup>
-
 </Project>
