@@ -1,0 +1,14 @@
+services:
+  docvault-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docvault-container
+    restart: unless-stopped
+    volumes:
+      - docvault_storage:/app/Storage
+      - docvault_db:/app/data
+
+volumes:
+  docvault_storage:
+  docvault_db:
