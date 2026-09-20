@@ -9,11 +9,10 @@
 
         private void txtFields_TextChanged(object sender, EventArgs e)
         {
-            btnSelectFile.Enabled = !string.IsNullOrWhiteSpace(txtTitle.Text) &&
-                     !string.IsNullOrWhiteSpace(txtTags.Text);
+            btnSelectFile.Enabled = !string.IsNullOrWhiteSpace(txtTitle.Text) && !string.IsNullOrWhiteSpace(txtTags.Text);
         }
 
-        private void btnSelectFile_Click(object sender, EventArgs e)
+        private async void btnSelectFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Документы|*.jpg;*.jpeg;*.png;*.pdf";
@@ -24,7 +23,7 @@
                 string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ofd.FileName);
                 string fullFileName = Path.Combine(storagePath, fileName);
                 File.Copy(ofd.FileName, fullFileName);
-                new DatabaseHelper().AddDocument(txtTitle.Text, txtTags.Text, Path.GetExtension(ofd.FileName), fullFileName);
+                await new DatabaseHelper().AddDocumentAsync(txtTitle.Text, txtTags.Text, Path.GetExtension(ofd.FileName), fullFileName);
                 this.Close();
             }
         }
