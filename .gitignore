@@ -363,3 +363,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# DocVault specific ignores
+Storage/
+docvault.db
+*.db
+*.db-shm
+*.db-wal
+graphify-out/
+tests/

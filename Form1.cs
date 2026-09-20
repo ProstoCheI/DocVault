@@ -7,25 +7,29 @@ namespace DocVaultLocal
         public Form1()
         {
             InitializeComponent();
-            new DatabaseHelper().InitializeDatabase();
-            UpdateTable();
         }
 
-        private void UpdateTable()
+        private async void Form1_Load(object sender, EventArgs e)
         {
-            dgvDocuments.DataSource = new DatabaseHelper().GetAllDocuments();
+            await new DatabaseHelper().InitializeDatabaseAsync();
+            await UpdateTableAsync();
         }
 
-        private void btnAdd_Click(object sender, EventArgs e)
+        private async Task UpdateTableAsync()
+        {
+            dgvDocuments.DataSource = await new DatabaseHelper().GetAllDocumentsAsync();
+        }
+
+        private async void btnAdd_Click(object sender, EventArgs e)
         {
             using (var addForm = new AddForm())
             {
                 addForm.ShowDialog();
             }
-            UpdateTable();
+            await UpdateTableAsync();
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private async void btnDelete_Click(object sender, EventArgs e)
         {
             if (dgvDocuments.RowCount != 0)
             {
@@ -41,8 +45,8 @@ namespace DocVaultLocal
                         {
                             File.Delete(filePath);
                         }
-                        new DatabaseHelper().DeleteDocument(id);
-                        UpdateTable();
+                        await new DatabaseHelper().DeleteDocumentAsync(id);
+                        await UpdateTableAsync();
                     }
                 }
                 catch (IOException ioEx)
@@ -110,7 +114,7 @@ namespace DocVaultLocal
             }
         }
 
-        private void btnSave_Click(object sender, EventArgs e)
+        private async void btnSave_Click(object sender, EventArgs e)
         {
             if (dgvDocuments.RowCount != 0)
             {
@@ -118,21 +122,22 @@ namespace DocVaultLocal
                 int id = selectedDoc.Id;
                 string title = txtTitle.Text;
                 string tags = txtTags.Text;
-                new DatabaseHelper().UpdateDocument(id, title, tags);
-                UpdateTable();
+                await new DatabaseHelper().UpdateDocumentAsync(id, title, tags);
+                await UpdateTableAsync();
             }
         }
 
-        private void txtSearch_TextChanged(object sender, EventArgs e)
+        private async void txtSearch_TextChanged(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
-                dgvDocuments.DataSource = new DatabaseHelper().SearchDocuments(txtSearch.Text);
+                dgvDocuments.DataSource = await new DatabaseHelper().SearchDocumentsAsync(txtSearch.Text);
             }
             else
             {
-                UpdateTable();
+                await UpdateTableAsync();
             }
         }
+
     }
 }

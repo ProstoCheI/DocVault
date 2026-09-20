@@ -6,7 +6,7 @@ namespace DocVaultLocal
     internal class DatabaseHelper
     {
         private const string ConnectionString = "Data Source=docvault.db";
-        public void InitializeDatabase()
+        public async Task InitializeDatabaseAsync()
         {
             string query = @"CREATE TABLE IF NOT EXISTS Documents (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,67 +17,67 @@ namespace DocVaultLocal
                 DateAdded DATETIME NOT NULL,
                 LastModified DATETIME NOT NULL
             );";
-            using (var connection = new SqliteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
-                connection.Execute(query);
+                await connection.OpenAsync();
+                await connection.ExecuteAsync(query);
             }
         }
 
-        public void AddDocument(string title, string tags, string fileType, string filePath)
+        public async Task AddDocumentAsync(string title, string tags, string fileType, string filePath)
         {
             string query = @"INSERT INTO Documents (Title, Tags, FileType, FilePath, DateAdded, LastModified)
                  VALUES (@Title, @Tags, @FileType, @FilePath, @DateAdded, @LastModified);";
-            using (var connection = new SqliteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
-                connection.Execute(query, new { Title = title, Tags = tags, FileType = fileType, FilePath = filePath, DateAdded = DateTime.Now, LastModified = DateTime.Now });
+                await connection.OpenAsync();
+                await connection.ExecuteAsync(query, new { Title = title, Tags = tags, FileType = fileType, FilePath = filePath, DateAdded = DateTime.Now, LastModified = DateTime.Now });
             }
         }
 
-        public List<Models.Document> GetAllDocuments()
+        public async Task<List<Models.Document>> GetAllDocumentsAsync()
         {
             string query = @"SELECT * FROM Documents ORDER BY DateAdded DESC;";
-            using (var connection = new SqliteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
-                var result = connection.Query<Models.Document>(query).ToList();
-                return result;
+                await connection.OpenAsync();
+                var result = await connection.QueryAsync<Models.Document>(query);
+                return result.ToList();
             }
         }
 
-        public void DeleteDocument(int id)
+        public async Task DeleteDocumentAsync(int id)
         {
             string query = @"DELETE FROM Documents WHERE Id = @Id;";
-            using (var connection = new SqliteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
-                connection.Execute(query, new { Id = id});
+                await connection.OpenAsync();
+                await connection.ExecuteAsync(query, new { Id = id});
             }
         }
 
-        public void UpdateDocument(int id, string title, string tags)
+        public async Task UpdateDocumentAsync(int id, string title, string tags)
         {
             string query = @"UPDATE Documents 
                             SET Title = @Title, Tags = @Tags, LastModified = @LastModified 
                             WHERE Id = @Id;";
-            using (var connection = new SqliteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
-                connection.Execute(query, new {Id = id, Title = title, Tags = tags, LastModified = DateTime.Now });
+                await connection.OpenAsync();
+                await connection.ExecuteAsync(query, new {Id = id, Title = title, Tags = tags, LastModified = DateTime.Now });
             }
         }
 
-        public List<Models.Document> SearchDocuments(string keyword)
+        public async Task<List<Models.Document>> SearchDocumentsAsync(string keyword)
         {
             string query = @"SELECT * FROM Documents 
                             WHERE Title LIKE @Keyword OR Tags LIKE @Keyword 
                             ORDER BY DateAdded DESC;";
-            using (var connection = new SqliteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
-                connection.Open();
-                var result = connection.Query<Models.Document>(query, new { Keyword = $"%{keyword}%" }).ToList();
-                return result;
+                await connection.OpenAsync();
+                var result = await connection.QueryAsync<Models.Document>(query, new { Keyword = $"%{keyword}%" });
+                return result.ToList();
             }
         }
     }
