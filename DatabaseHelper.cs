@@ -1,5 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.Sqlite;
+using System.ComponentModel;
+using System.Threading;
 
 namespace DocVaultLocal
 {
@@ -35,9 +37,13 @@ namespace DocVaultLocal
             }
         }
 
-        public async Task<List<Models.Document>> GetAllDocumentsAsync()
+        public async Task<List<Models.Document>> GetDocumentsAsync(int limit = 30, int offset = 0, CancellationToken cancelToken = default)
         {
-            string query = @"SELECT * FROM Documents ORDER BY DateAdded DESC;";
+            CommandDefinition query = new CommandDefinition(
+                commandText: @"SELECT * FROM Documents ORDER BY DateAdded DESC LIMIT @Limit OFFSET @Offset;",
+                parameters: new { Limit = limit, Offset = offset },
+                cancellationToken: cancelToken
+            );
             await using (var connection = new SqliteConnection(ConnectionString))
             {
                 await connection.OpenAsync();
@@ -68,15 +74,17 @@ namespace DocVaultLocal
             }
         }
 
-        public async Task<List<Models.Document>> SearchDocumentsAsync(string keyword)
+        public async Task<List<Models.Document>> SearchDocumentsAsync(string keyword, int limit = 30, int offset = 0, CancellationToken cancelToken = default)
         {
-            string query = @"SELECT * FROM Documents 
-                            WHERE Title LIKE @Keyword OR Tags LIKE @Keyword 
-                            ORDER BY DateAdded DESC;";
+            CommandDefinition query = new CommandDefinition(
+                commandText: @"SELECT * FROM Documents WHERE LOWER(Title) LIKE LOWER(@Keyword) OR LOWER(Tags) LIKE LOWER(@Keyword) ORDER BY DateAdded DESC LIMIT @Limit OFFSET @Offset;",
+                parameters: new { Keyword = $"%{keyword}%", Limit = limit, Offset = offset },
+                cancellationToken: cancelToken
+            );
             await using (var connection = new SqliteConnection(ConnectionString))
             {
                 await connection.OpenAsync();
-                var result = await connection.QueryAsync<Models.Document>(query, new { Keyword = $"%{keyword}%" });
+                var result = await connection.QueryAsync<Models.Document>(query);
                 return result.ToList();
             }
         }
