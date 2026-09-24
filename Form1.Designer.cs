@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             splitContainer1 = new SplitContainer();
             lblSearch = new Label();
             txtSearch = new TextBox();
@@ -41,6 +42,7 @@
             btnOpenFile = new Button();
             btnSave = new Button();
             btnAdd = new Button();
+            searchTimer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -104,6 +106,7 @@
             dgvDocuments.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvDocuments.Size = new Size(460, 395);
             dgvDocuments.TabIndex = 0;
+            dgvDocuments.Scroll += dgvDocuments_Scroll;
             dgvDocuments.SelectionChanged += dgvDocuments_SelectionChanged;
             // 
             // btnDelete
@@ -194,6 +197,11 @@
             btnAdd.UseVisualStyleBackColor = true;
             btnAdd.Click += btnAdd_Click;
             // 
+            // searchTimer
+            // 
+            searchTimer.Interval = 300;
+            searchTimer.Tick += searchTimer_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -229,5 +237,6 @@
         private Label lblTitle;
         private Label lblSearch;
         private Button btnDelete;
+        private System.Windows.Forms.Timer searchTimer;
     }
 }

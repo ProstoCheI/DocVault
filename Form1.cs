@@ -1,9 +1,18 @@
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 
 namespace DocVaultLocal
 {
     public partial class Form1 : Form
     {
+        private CancellationTokenSource? _searchCts;
+        private BindingList<Models.Document> _documentList = new BindingList<Models.Document>();
+        private int _curentOffset = 0;
+        private bool _isLoading = false;
+        private bool _hasMoreData = true;
+        private const int pageSize = 30;
+
         public Form1()
         {
             InitializeComponent();
@@ -11,13 +20,28 @@ namespace DocVaultLocal
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+            dgvDocuments.DataSource = _documentList;
             await new DatabaseHelper().InitializeDatabaseAsync();
-            await UpdateTableAsync();
+            await LoadAllTableAsync(pageSize, _curentOffset);
         }
 
-        private async Task UpdateTableAsync()
+        private async Task LoadAllTableAsync(int limit, int offset)
         {
-            dgvDocuments.DataSource = await new DatabaseHelper().GetAllDocumentsAsync();
+            if (_hasMoreData) {
+                if (_curentOffset == 0)
+                {
+                    _documentList.Clear();
+                }
+                var items = await new DatabaseHelper().GetDocumentsAsync(limit, offset);
+                foreach (var item in items) 
+                { 
+                    _documentList.Add(item); 
+                }
+                if (items.Count() < pageSize)
+                {
+                    _hasMoreData = false;
+                }
+            }
         }
 
         private async void btnAdd_Click(object sender, EventArgs e)
@@ -26,7 +50,8 @@ namespace DocVaultLocal
             {
                 addForm.ShowDialog();
             }
-            await UpdateTableAsync();
+            _curentOffset = 0;
+            await LoadAllTableAsync(pageSize, _curentOffset);
         }
 
         private async void btnDelete_Click(object sender, EventArgs e)
@@ -46,7 +71,8 @@ namespace DocVaultLocal
                             File.Delete(filePath);
                         }
                         await new DatabaseHelper().DeleteDocumentAsync(id);
-                        await UpdateTableAsync();
+                        _curentOffset = 0;
+                        await LoadAllTableAsync(pageSize, _curentOffset);
                     }
                 }
                 catch (IOException ioEx)
@@ -123,21 +149,78 @@ namespace DocVaultLocal
                 string title = txtTitle.Text;
                 string tags = txtTags.Text;
                 await new DatabaseHelper().UpdateDocumentAsync(id, title, tags);
-                await UpdateTableAsync();
+                _curentOffset = 0;
+                await LoadAllTableAsync(pageSize, _curentOffset);
             }
         }
 
-        private async void txtSearch_TextChanged(object sender, EventArgs e)
+        private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(txtSearch.Text))
-            {
-                dgvDocuments.DataSource = await new DatabaseHelper().SearchDocumentsAsync(txtSearch.Text);
-            }
-            else
-            {
-                await UpdateTableAsync();
-            }
+            searchTimer.Stop();
+            searchTimer.Start();
         }
 
+        private async void searchTimer_Tick(object sender, EventArgs e)
+        {
+            searchTimer.Stop();
+            _curentOffset = 0;
+            _hasMoreData = true;
+            await PerformSearchAsync(txtSearch.Text.Trim());
+        }
+
+        private async Task PerformSearchAsync(string searchText)
+        {
+            _searchCts?.Cancel();
+            _searchCts = new CancellationTokenSource();
+            try
+            {
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    if (_curentOffset == 0)
+                    {
+                        _documentList.Clear();
+                    }
+                    var items = await new DatabaseHelper().SearchDocumentsAsync(searchText, pageSize, _curentOffset, _searchCts.Token);
+                    foreach (var item in items)
+                    {
+                        _documentList.Add(item);
+                    }
+                    if (items.Count() < pageSize)
+                    {
+                        _hasMoreData = false;
+                    }
+                }
+                else
+                {
+                    _curentOffset = 0;
+                    await LoadAllTableAsync(pageSize, _curentOffset);
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        private async void dgvDocuments_Scroll(object sender, ScrollEventArgs e)
+        {
+            if (e.ScrollOrientation == ScrollOrientation.VerticalScroll && (dgvDocuments.FirstDisplayedScrollingRowIndex + dgvDocuments.DisplayedRowCount(true) >= dgvDocuments.RowCount))
+            {
+                if (_hasMoreData)
+                {
+                    if (!_isLoading)
+                    {
+                        _isLoading = true;
+                        _curentOffset += pageSize;
+                        if (string.IsNullOrEmpty(txtSearch.Text.Trim()))
+                        {
+                            await LoadAllTableAsync(pageSize, _curentOffset);
+                        }
+                        else
+                        {
+                            await PerformSearchAsync(txtSearch.Text.Trim());
+                        }
+                        _isLoading = false;
+                    }
+                }
+            }
+        }
     }
 }
