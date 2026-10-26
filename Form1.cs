@@ -27,19 +27,81 @@ namespace DocVaultLocal
 
         private async Task LoadAllTableAsync(int limit, int offset)
         {
-            if (_hasMoreData) {
-                if (_curentOffset == 0)
+            _searchCts?.Cancel();
+            CancellationTokenSource localCts = new CancellationTokenSource();
+            _searchCts = localCts;
+            try
+            {
+                if (_hasMoreData)
                 {
-                    _documentList.Clear();
+                    if (_curentOffset == 0)
+                    {
+                        _documentList.Clear();
+                    }
+                    var items = await new DatabaseHelper().GetDocumentsAsync(limit, offset, localCts.Token);
+                    if (localCts == _searchCts && !localCts.IsCancellationRequested)
+                    {
+                        foreach (var item in items)
+                        {
+                            _documentList.Add(item);
+                        }
+                        if (items.Count() < pageSize)
+                        {
+                            _hasMoreData = false;
+                        }
+                    }
                 }
-                var items = await new DatabaseHelper().GetDocumentsAsync(limit, offset);
-                foreach (var item in items) 
-                { 
-                    _documentList.Add(item); 
-                }
-                if (items.Count() < pageSize)
+            }
+            catch (OperationCanceledException) when (localCts.IsCancellationRequested) { }
+            finally
+            {
+                if (localCts == _searchCts)
                 {
-                    _hasMoreData = false;
+                    _searchCts = null;
+                }
+                localCts.Dispose();
+            }
+        }
+
+        private async Task PerformSearchAsync(string searchText)
+        {
+            if (string.IsNullOrEmpty(searchText))
+            {
+                _curentOffset = 0;
+                await LoadAllTableAsync(pageSize, _curentOffset);
+            }
+            else
+            {
+                _searchCts?.Cancel();
+                CancellationTokenSource localCts = new CancellationTokenSource();
+                _searchCts = localCts;
+                try
+                {
+                    if (_curentOffset == 0)
+                    {
+                        _documentList.Clear();
+                    }
+                    var items = await new DatabaseHelper().SearchDocumentsAsync(searchText, pageSize, _curentOffset, localCts.Token);
+                    if (localCts == _searchCts && !localCts.IsCancellationRequested)
+                    {
+                        foreach (var item in items)
+                        {
+                            _documentList.Add(item);
+                        }
+                        if (items.Count() < pageSize)
+                        {
+                            _hasMoreData = false;
+                        }
+                    }
+                }
+                catch (OperationCanceledException) when (localCts.IsCancellationRequested) { }
+                finally
+                {
+                    if (localCts == _searchCts)
+                    {
+                        _searchCts = null;
+                    }
+                    localCts.Dispose();
                 }
             }
         }
@@ -190,37 +252,6 @@ namespace DocVaultLocal
             _curentOffset = 0;
             _hasMoreData = true;
             await PerformSearchAsync(txtSearch.Text.Trim());
-        }
-
-        private async Task PerformSearchAsync(string searchText)
-        {
-            _searchCts?.Cancel();
-            _searchCts = new CancellationTokenSource();
-            try
-            {
-                if (!string.IsNullOrEmpty(searchText))
-                {
-                    if (_curentOffset == 0)
-                    {
-                        _documentList.Clear();
-                    }
-                    var items = await new DatabaseHelper().SearchDocumentsAsync(searchText, pageSize, _curentOffset, _searchCts.Token);
-                    foreach (var item in items)
-                    {
-                        _documentList.Add(item);
-                    }
-                    if (items.Count() < pageSize)
-                    {
-                        _hasMoreData = false;
-                    }
-                }
-                else
-                {
-                    _curentOffset = 0;
-                    await LoadAllTableAsync(pageSize, _curentOffset);
-                }
-            }
-            catch (OperationCanceledException) { }
         }
 
         private async void dgvDocuments_Scroll(object sender, ScrollEventArgs e)
