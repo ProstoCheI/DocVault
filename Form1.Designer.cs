@@ -98,6 +98,7 @@
             // 
             // dgvDocuments
             // 
+            dgvDocuments.AllowUserToAddRows = false;
             dgvDocuments.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvDocuments.Dock = DockStyle.Bottom;
             dgvDocuments.Location = new Point(0, 55);
