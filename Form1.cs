@@ -50,8 +50,16 @@ namespace DocVaultLocal
             {
                 addForm.ShowDialog();
             }
+            _hasMoreData = true;
             _curentOffset = 0;
-            await LoadAllTableAsync(pageSize, _curentOffset);
+            if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+            {
+                await PerformSearchAsync(txtSearch.Text.Trim());
+            }
+            else
+            {
+                await LoadAllTableAsync(pageSize, _curentOffset);
+            }
         }
 
         private async void btnDelete_Click(object sender, EventArgs e)
@@ -72,7 +80,15 @@ namespace DocVaultLocal
                         }
                         await new DatabaseHelper().DeleteDocumentAsync(id);
                         _curentOffset = 0;
-                        await LoadAllTableAsync(pageSize, _curentOffset);
+                        _hasMoreData = true;
+                        if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+                        {
+                            await PerformSearchAsync(txtSearch.Text.Trim());
+                        }
+                        else
+                        {
+                            await LoadAllTableAsync(pageSize, _curentOffset);
+                        }
                     }
                 }
                 catch (IOException ioEx)
@@ -150,7 +166,15 @@ namespace DocVaultLocal
                 string tags = txtTags.Text;
                 await new DatabaseHelper().UpdateDocumentAsync(id, title, tags);
                 _curentOffset = 0;
-                await LoadAllTableAsync(pageSize, _curentOffset);
+                _hasMoreData = true;
+                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+                {
+                    await PerformSearchAsync(txtSearch.Text.Trim());
+                }
+                else
+                {
+                    await LoadAllTableAsync(pageSize, _curentOffset);
+                }
             }
         }
 
